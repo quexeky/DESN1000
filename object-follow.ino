@@ -1,6 +1,7 @@
 #pragma region Imports
 #include <Pixy2.h>
 #include <L298NX2.h>
+#include <stdlib.h>
 #pragma endregion
 #pragma region Pins
 const unsigned int EN_A = 3;
@@ -67,17 +68,21 @@ void setup() {
 void loop() {
   pixy.ccc.getBlocks();
 
+  Block blocks[] = filterBlocks();
+
   if (pixy.ccc.numBlocks) {
     debugBlocks();
     focusObject();
-    noBlockDetected();
   } else {
-
+    noBlockDetected();
   }
 }
 void noBlockDetected() {
   // Placeholder for things like going back and turning around 
   // after a certain amount of time has passed
+}
+std::vector<Block> filterBlocks() {
+  
 }
 
 void debugBlocks() {
@@ -104,8 +109,20 @@ void focusObject() {
   }
 }
 
-BoundingBox getPixyCamBoundingBox() {
-  Block block = pixy.ccc.blocks[0];
+BoundingBox getPixyCamBoundingBox(std::vector<Block> blocks) {
+  int closestBBIndex = 0;
+  float closestBBMidpoint = INFINITY;
+
+  for (int i = 0; i < blocks; i++) {
+    Block box = pixy.ccc.blocks[i];
+    float midpoint = getCentrePixyBox(box);
+    if (abs(midpoint) < closestBBMidpoint) {
+      closestBBMidpoint = midpoint;
+      closestBBIndex = i;
+    }
+  }
+  Block block = pixy.ccc.blocks[closestBBIndex];
+  
   return BoundingBox{
     block.m_x,
     block.m_y,
@@ -113,7 +130,11 @@ BoundingBox getPixyCamBoundingBox() {
     block.m_height
   };
 }
+float getCentrePixyBox(Block box) {
+  float midpointX = (box.m_x + (box.m_width / 2));
 
+  return map(midpointX, 0, SCREEN_W, -1, 1);
+}
 float getCentre(BoundingBox box) {
   // Get the centre of the object to keep that in the middle
   float midpointX = (box.x + (box.width / 2));
