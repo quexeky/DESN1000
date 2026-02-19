@@ -67,9 +67,6 @@ void setup() {
 
 void loop() {
   pixy.ccc.getBlocks();
-
-  Block blocks[] = filterBlocks();
-
   if (pixy.ccc.numBlocks) {
     debugBlocks();
     focusObject();
@@ -78,11 +75,8 @@ void loop() {
   }
 }
 void noBlockDetected() {
-  // Placeholder for things like going back and turning around 
+  // Placeholder for things like going back and turning around
   // after a certain amount of time has passed
-}
-std::vector<Block> filterBlocks() {
-  
 }
 
 void debugBlocks() {
@@ -109,11 +103,11 @@ void focusObject() {
   }
 }
 
-BoundingBox getPixyCamBoundingBox(std::vector<Block> blocks) {
+BoundingBox getPixyCamBoundingBox() {
   int closestBBIndex = 0;
   float closestBBMidpoint = INFINITY;
 
-  for (int i = 0; i < blocks; i++) {
+  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
     Block box = pixy.ccc.blocks[i];
     float midpoint = getCentrePixyBox(box);
     if (abs(midpoint) < closestBBMidpoint) {
@@ -122,13 +116,17 @@ BoundingBox getPixyCamBoundingBox(std::vector<Block> blocks) {
     }
   }
   Block block = pixy.ccc.blocks[closestBBIndex];
-  
+
   return BoundingBox{
     block.m_x,
     block.m_y,
     block.m_width,
     block.m_height
   };
+}
+bool filterBlock(int idx) {
+  return true;
+  //return pixy.ccc.blocks[idx]/*Whatever condition*/
 }
 float getCentrePixyBox(Block box) {
   float midpointX = (box.m_x + (box.m_width / 2));
